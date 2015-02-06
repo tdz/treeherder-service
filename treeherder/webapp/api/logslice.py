@@ -13,6 +13,7 @@ from django.conf import settings
 
 import urllib2
 import gzip
+import json
 
 filesystem = caches['filesystem']
 
@@ -39,6 +40,7 @@ class LogSliceView(viewsets.ViewSet):
         """
         job_id = request.QUERY_PARAMS.get("job_id")
         log_name = request.QUERY_PARAMS.get("name", "builds-4h")
+        format = request.QUERY_PARAMS.get("format", "text")
 
         handle = None
         gz_file = None
@@ -82,7 +84,10 @@ class LogSliceView(viewsets.ViewSet):
                     elif i >= end_line:
                         break
 
-                    lines.append({"text": line, "index": i})
+                    if format == 'json':
+                        lines.append({"data": json.loads(line), "index": i})
+                    else:
+                        lines.append({"text": line, "index": i})
 
                 return Response(lines)
 
